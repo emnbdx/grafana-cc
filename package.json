@@ -1,5 +1,5 @@
 {
-  "name": "grafana-cc",
+  "name": "grafana-test",
   "version": "0.0.1",
   "scripts": {
     "install": "./build.sh",
