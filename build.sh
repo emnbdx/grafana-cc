@@ -15,7 +15,13 @@ fi
 wget https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz
 echo "${GRAFANA_SHA_256}  grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz" | sha256sum -c
 tar -zxf grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz
-mv grafana-${GRAFANA_VERSION} grafana
+rm grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz
+
+if [[ $GRAFANA_VERSION == 11* ]]; then
+    mv grafana-v${GRAFANA_VERSION} grafana
+else
+    mv grafana-${GRAFANA_VERSION} grafana
+fi
 
 cd grafana
 
@@ -40,9 +46,9 @@ if [[ -n "${GRAFANA_PLUGINS:-}" ]]; then
       version=${plugin##*:}
       if [ "$name" != "$version" ];
       then
-        ../../bin/grafana-cli plugins install "$name" "$version"
+        ../../bin/grafana cli plugins install "$name" "$version"
       else 
-        ../../bin/grafana-cli plugins install "$name"
+        ../../bin/grafana cli plugins install "$name"
       fi
     fi
   done
