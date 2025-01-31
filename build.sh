@@ -2,8 +2,13 @@
 
 set -euo pipefail
 
-if [[ -z "${GRAFANA_VERSION}" ]]; then
+if [[ -z "${GRAFANA_VERSION:-}" ]]; then
   echo "No GRAFANA_VERSION environment variable set"
+  exit 1
+fi
+
+if [[ -z "${GRAFANA_SHA_256:-}" ]]; then
+  echo "No GRAFANA_SHA_256 environment variable set"
   exit 1
 fi
 
@@ -14,33 +19,32 @@ mv grafana-${GRAFANA_VERSION} grafana
 
 cd grafana
 
-if [[ -z "${GRAFANA_PLUGINS}" ]]; then
-  echo "No GRAFANA_PLUGINS environment variable set"
-  exit 1
-fi
+if [[ -n "${GRAFANA_PLUGINS:-}" ]]; then
 
-mkdir -p data/plugins
+  mkdir -p data/plugins
 
-## Load custom plugins (set in GRAFANA_PLUGINS env variable)
+  ## Load custom plugins (set in GRAFANA_PLUGINS env variable)
 
-cd data/plugins
-plugins="${GRAFANA_PLUGINS}"
-readarray -td, array <<<"$plugins,"
-unset 'array[-1]'
-declare -p array
-for plugin in "${array[@]}"
-do
-  if [[ $plugin == http* ]]
-  then
-    git clone "$plugin"
-  else 
-    name=${plugin%%:*}
-    version=${plugin##*:}
-    if [ "$name" != "$version" ];
+  cd data/plugins
+  plugins="${GRAFANA_PLUGINS}"
+  readarray -td, array <<<"$plugins,"
+  unset 'array[-1]'
+  declare -p array
+  for plugin in "${array[@]}"
+  do
+    if [[ $plugin == http* ]]
     then
-      ../../bin/grafana-cli plugins install "$name" "$version"
+      git clone "$plugin"
     else 
-      ../../bin/grafana-cli plugins install "$name"
+      name=${plugin%%:*}
+      version=${plugin##*:}
+      if [ "$name" != "$version" ];
+      then
+        ../../bin/grafana-cli plugins install "$name" "$version"
+      else 
+        ../../bin/grafana-cli plugins install "$name"
+      fi
     fi
-  fi
-done
+  done
+
+fi
