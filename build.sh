@@ -14,6 +14,11 @@ mv grafana-${GRAFANA_VERSION} grafana
 
 cd grafana
 
+if [[ -z "${GRAFANA_PLUGINS}" ]]; then
+  echo "No GRAFANA_PLUGINS environment variable set"
+  exit 1
+fi
+
 mkdir -p data/plugins
 
 ## Load custom plugins (set in GRAFANA_PLUGINS env variable)
